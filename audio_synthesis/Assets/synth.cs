@@ -19,6 +19,7 @@ public class NoteInfo
 
 public class synth : MonoBehaviour
 {
+    //some comment
     //to update, 
         //place scene object in Assets folder 
             //this creates a prefab

@@ -9,6 +9,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 
+
+
+
 public class NoteInfo
 {
     public int noteNum { get; set; } //ranges 0-127
@@ -19,11 +22,15 @@ public class NoteInfo
 
 public class synth : MonoBehaviour
 {
-    //some comment
+
+    public bool[] nodePlaying = new bool[10];
+    private int precomposedScore = 0;
+    private int totalNotes = 0;
+    
     //to update, 
-        //place scene object in Assets folder 
-            //this creates a prefab
-        //drag the prefab into the synth script
+    //place scene object in Assets folder 
+    //this creates a prefab
+    //drag the prefab into the synth script
     public GameObject NoteBar;
 
     //this array stores whether or not a note should be playing
@@ -35,6 +42,7 @@ public class synth : MonoBehaviour
 
     private List<NoteInfo> MelodyList = new List<NoteInfo>();
     private List<NoteInfo> BackingList = new List<NoteInfo>();
+    private List<NoteInfo> NoteBarList = new List<NoteInfo>();
 
     private float timeOffset = 5.0f;
 
@@ -75,12 +83,107 @@ public class synth : MonoBehaviour
     int timeIndex4 = 0;
     int timeIndex5 = 0;
 
+    private float num;
+
     AudioSource audioSource;
 
     //public float barSpeed = 0;
-    
+
+    private GameObject node;
+
     void Start()
     {
+
+        for (int i = 0; i < 10; i++)
+        {
+            nodePlaying[i] = false;
+        }
+
+        for (float i = 0; i < 105; i++)
+        {
+            node = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            node.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            node.GetComponent<Collider>().enabled = !node.GetComponent<Collider>().enabled;
+            node.AddComponent<nodeOscillation>();
+
+            if (i < 21)
+            {
+                node.transform.position = new Vector3(10f, 0.05f, (10 - i) / 2);
+                node.name = "Node 1 " + i;
+            }
+
+            if (i >= 21 & i < 42)
+            {
+                node.transform.position = new Vector3(8f, 0.05f, (31 - i) / 2);
+                node.name = "Node 2 " + i;
+
+            }
+
+            if (i >= 42 & i < 63)
+            {
+                node.transform.position = new Vector3(6f, 0.05f, (52 - i) / 2);
+                node.name = "Node 3 " + i;
+
+            }
+
+            if (i >= 63 & i < 84)
+            {
+                node.transform.position = new Vector3(4f, 0.05f, (73 - i) / 2);
+                node.name = "Node 4 " + i;
+
+            }
+
+            if (i >= 84 & i < 105)
+            {
+                node.transform.position = new Vector3(2f, 0.05f, (94 - i) / 2);
+                node.name = "Node 5 " + i;
+
+            }
+        }
+
+        for (float i = 0; i < 105; i++)
+        {
+            node = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            node.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            node.GetComponent<Collider>().enabled = !node.GetComponent<Collider>().enabled;
+            node.AddComponent<nodeOscillation>();
+
+            if (i < 21)
+            {
+                node.transform.position = new Vector3(-10f, 0.05f, (10 - i) / 2);
+                node.name = "Node 1 Mirror" + i;
+            }
+
+            if (i >= 21 & i < 42)
+            {
+                node.transform.position = new Vector3(-8f, 0.05f, (31 - i) / 2);
+                node.name = "Node 2 Mirror" + i;
+
+            }
+
+            if (i >= 42 & i < 63)
+            {
+                node.transform.position = new Vector3(-6f, 0.05f, (52 - i) / 2);
+                node.name = "Node 3 Mirror" + i;
+
+            }
+
+            if (i >= 63 & i < 84)
+            {
+                node.transform.position = new Vector3(-4f, 0.05f, (73 - i) / 2);
+                node.name = "Node 4 Mirror" + i;
+
+            }
+
+            if (i >= 84 & i < 105)
+            {
+                node.transform.position = new Vector3(-2f, 0.05f, (94 - i) / 2);
+                node.name = "Node 5 Mirror" + i;
+
+            }
+        }
+
+
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0; //force 2D sound
@@ -105,13 +208,15 @@ public class synth : MonoBehaviour
         }
 
         //read in midi file
-        var midiFile = MidiFile.Read("Assets/sample_song.mid");
+        var midiFile = MidiFile.Read("Assets/pink_panther.mid");
         TempoMap tempoMap = midiFile.GetTempoMap();
         print(tempoMap);
 
-        //parse and extract track of noteBars
-        //i.e. the strings that should be played
-        //TODO: change name from melody track to noteBar track
+
+        
+
+        //parse and extract melody track
+        //i.e. the frequency of notes that should be played
         using (var notesManager = midiFile.GetTrackChunks().First().ManageNotes())
         {
             var notes = notesManager.Notes;
@@ -128,23 +233,74 @@ public class synth : MonoBehaviour
                 MelodyList.Add(currentNoteRead);
 
                 print(currentNoteRead.noteNum);
+            }
+        }
+
+
+        //parse and extract track of noteBars
+        //i.e. the strings that should be played
+        //TODO: change name from melody track to noteBar track
+        using (var notesManager = midiFile.GetTrackChunks().ElementAtOrDefault(1).ManageNotes())
+        {
+            var notes = notesManager.Notes;
+            //var numNoteBar = 1;
+            foreach (Note note in notes)
+            {
+                NoteInfo currentNoteRead = new NoteInfo
+                {
+                    noteNum = note.NoteNumber,
+                    startTime = note.Time / 960.0f,
+                    duration = note.Length / 960.0f,
+                    velocity = note.Velocity,
+                };
+                //add this object to the melody notes list
+                NoteBarList.Add(currentNoteRead);
+
+                //print(currentNoteRead.noteNum);
 
 
                 //Rigidbody newNoteBar;
                 //Instantiate(NoteBar, new Vector3(note.NoteNumber / 254.0f, 0, note.Time / 960.0f), Quaternion.identity);
                 //TODO: MOVE INSTANTIATE TO NOTE BAR TRACK
-                Instantiate(NoteBar, new Vector3(currentNoteRead.noteNum-69, 0.05f, + currentNoteRead.startTime*2.0f + 10.0f), Quaternion.identity);
-                NoteBar.gameObject.name = "NoteBar " + currentNoteRead.noteNum + " ";
+                //print("initial object: " + NoteBar.gameObject.name);
+                NoteBar.gameObject.name = "NoteBar " + (currentNoteRead.noteNum - 63) + " ";
+                NoteBar.gameObject.transform.localScale = new Vector3(2, 0.1f, currentNoteRead.duration);
+                NoteBar.gameObject.GetComponent<Collider>().isTrigger = true;
+                Instantiate(NoteBar, new Vector3(currentNoteRead.noteNum - 63, 0.05f, +currentNoteRead.startTime * 2.0f + 10.0f), Quaternion.identity);
+                Instantiate(NoteBar, new Vector3((-1) * (currentNoteRead.noteNum - 63), 0.05f, +currentNoteRead.startTime * 2.0f + 10.0f), Quaternion.identity);
+
+                totalNotes++; //gets total number of notes for scoring later
+
+                //gameObject.tag = NoteBar.gameObject.name;
+
+
 
             }
+
+
+
+
             //var dump = ObjectDumper.Dump(notes);
             //print(dump);
         }
 
-
-        //parse and extract melody track
-        //i.e. the frequency of notes that should be played
-
+        //parse and extract backing track
+        using (var notesManager = midiFile.GetTrackChunks().ElementAtOrDefault(2).ManageNotes())
+        {
+            var notes = notesManager.Notes;
+            foreach (Note note in notes)
+            {
+                NoteInfo currentNoteRead = new NoteInfo
+                {
+                    noteNum = note.NoteNumber,
+                    startTime = note.Time / 960.0f,
+                    duration = note.Length / 960.0f,
+                    velocity = note.Velocity,
+                };
+                //add this object to the backing notes list
+                BackingList.Add(currentNoteRead);
+            }
+        }
 
 
         //parse and extract backing track
@@ -165,7 +321,7 @@ public class synth : MonoBehaviour
             }
         }
 
-
+        print("start numnotes: "+totalNotes);
 
     }
 
@@ -174,7 +330,7 @@ public class synth : MonoBehaviour
     {
 
         //iterate through notes that haven't been played
-        foreach(NoteInfo note in BackingList.ToList())
+        foreach (NoteInfo note in BackingList.ToList())
         {
             //check if note should start playig
             if (note.startTime + timeOffset <= Time.time)
@@ -194,10 +350,19 @@ public class synth : MonoBehaviour
             if (note.startTime + timeOffset <= Time.time)
             {
                 currentNoteFreq = freqs[note.noteNum];
+                MelodyList.Remove(note);
+                timeIndex1 = 0;
             }
         }
 
         // TODO: iterate through track of noteBars and determine ZshouldBePlaying etc
+        foreach(NoteInfo note in NoteBarList.ToList())
+        {
+            if (note.startTime + timeOffset <= Time.time)
+            {
+
+            }
+        }
 
 
         for (int i = 0; i <= 127; i++)
@@ -223,88 +388,134 @@ public class synth : MonoBehaviour
         //        audioSource.Stop();
         //    }
         //}
+        //GameObject synth  = GameObject.FindGameObjectWithTag("NoteBar").transform.position.x == 4;
+    
+        var noteBarList1 = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "NoteBar 10 (Clone)");
+        var noteBarList2 = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "NoteBar 8 (Clone)");
+        var noteBarList3 = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "NoteBar 6 (Clone)");
+        var noteBarList4 = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "NoteBar 4 (Clone)");
+        var noteBarList5 = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "NoteBar 2 (Clone)");
 
-        if (Input.GetKeyDown(KeyCode.Z))
+        foreach (GameObject noteBar1 in noteBarList1)
         {
-            Zplaying = true;
-            Ztime = Time.time;
-            timeIndex1 = 0;
-            //print("Z was pressed");
-        }
-        else if (Time.time - Ztime > NoteDur)
-        {
-            Zplaying = false;
-            timeIndex1 = 0;
-            //print("Z was released");
-        }
-
-
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            Xplaying = true;
-            Xtime = Time.time;
-            timeIndex2 = 0;
-            //print("X was pressed");
-        }
-        else if (Time.time - Xtime > NoteDur)
-        {
-            Xplaying = false;
-            timeIndex2 = 0;
-            //print("X was released");
-        }
-
-
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            Cplaying = true;
-            Ctime = Time.time;
-            timeIndex3 = 0;
-            //print("C was pressed");
-        }
-        else if (Time.time - Ctime > NoteDur)
-        {
-            Cplaying = false;
-            timeIndex3 = 0;
-            //print("C was released");
+            if (GameObject.Find("Movement Cube").transform.position.x <= 10.5 & GameObject.Find("Movement Cube").transform.position.x >= 9.5 & Mathf.Abs(noteBar1.transform.position.z) <= 0.05)
+            {
+                Zplaying = true;    //makes sound play
+                nodePlaying[0] = true; //makes strings oscillate
+                precomposedScore++;
+                Ztime = Time.time;
+                timeIndex1 = 0;
+                //print("Z was pressed");
+            }
+            else
+            {
+                Zplaying = false;
+                nodePlaying[0] = false;
+                timeIndex1 = 0;
+            }
+            //else if (Time.time - Ztime > NoteDur)
+            //{
+            //    Zplaying = false;
+             //   nodePlaying[0] = false;
+             //   timeIndex1 = 0;
+                //print("Z was released");
+            //}
         }
 
-
-        if (Input.GetKeyDown(KeyCode.V))
+        foreach (GameObject noteBar2 in noteBarList2)
         {
-            Vplaying = true;
-            Vtime = Time.time;
-            timeIndex4 = 0;
-            //print("V was pressed");
-        }
-        else if (Time.time - Vtime > NoteDur)
-        {
-            Vplaying = false;
-            timeIndex4 = 0;
-            //print("V was released");
-        }
-
-
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            Bplaying = true;
-            Btime = Time.time;
-            timeIndex5 = 0;
-            //print("B was pressed");
-            //resetBtimer
-        }
-        else if (Time.time - Btime > NoteDur)
-        {
-            Bplaying = false;
-            timeIndex5 = 0;
-            //print("B was released");
+            if (GameObject.Find("Movement Cube").transform.position.x <= 8.5 & GameObject.Find("Movement Cube").transform.position.x >= 7.5 & Mathf.Abs(noteBar2.transform.position.z) <= 0.05)
+            {
+                Xplaying = true;
+                nodePlaying[1] = true;
+                precomposedScore++;
+                Xtime = Time.time;
+                timeIndex2 = 0;
+                //print("X was pressed");
+            }
+            else if (Time.time - Xtime > NoteDur)
+            {
+                Xplaying = false;
+                nodePlaying[1] = false;
+                timeIndex2 = 0;
+                //print("X was released");
+            }
         }
 
+        foreach (GameObject noteBar3 in noteBarList3)
+        {
+            if (GameObject.Find("Movement Cube").transform.position.x <= 6.5 & GameObject.Find("Movement Cube").transform.position.x >= 5.5 & Mathf.Abs(noteBar3.transform.position.z) <= 0.05)
+            {
+                Cplaying = true;
+                nodePlaying[2] = true;
+                precomposedScore++;
+                Ctime = Time.time;
+                timeIndex3 = 0;
+                //print("C was pressed");
+            }
+            else if (Time.time - Ctime > NoteDur)
+            {
+                Cplaying = false;
+                nodePlaying[2] = false;
+                timeIndex3 = 0;
+                //print("C was released");
+            }
+        }
+        int j = 0;
+        foreach (GameObject noteBar4 in noteBarList4)
+        {
+            if (GameObject.Find("Movement Cube").transform.position.x <= 4.5 & GameObject.Find("Movement Cube").transform.position.x >= 3.5 & Mathf.Abs(noteBar4.transform.position.z) <= 0.05)
+            {
+                Vplaying = true;
+                nodePlaying[3] = true;
+                //j++;
+                precomposedScore++;
+                Vtime = Time.time;
+                timeIndex4 = 0;
+                //print("V was pressed");
+            }
+            else if (Time.time - Vtime > NoteDur)
+            {
+                Vplaying = false;
+                nodePlaying[3] = false;
+                timeIndex4 = 0;
+                //print("V was released");
+            }
+        }
+        //print("m:" + m);
+        //print("j: "+j);
+        foreach (GameObject noteBar5 in noteBarList5)
+        {
+            if (GameObject.Find("Movement Cube").transform.position.x <= 2.5 & GameObject.Find("Movement Cube").transform.position.x >= 1.5 & Mathf.Abs(noteBar5.transform.position.z) <= 0.05)
+            {
+                Bplaying = true;
+                nodePlaying[4] = true;
+                precomposedScore++;
+                Btime = Time.time;
+                timeIndex5 = 0;
+                //print("B was pressed");
+                //resetBtimer
+            }
+            else if (Time.time - Btime > NoteDur)
+            {
+                Bplaying = false;
+                nodePlaying[4] = false;
+                timeIndex5 = 0;
+                //print("B was released");
+            }
 
+        }
         //print(Zplaying);
         //print(Xplaying);
         //print(Cplaying);
         //print(Vplaying);
         //print(Bplaying);
+
+        if (Time.time == 20)
+        {
+            endGame(precomposedScore);
+        }
+
     }
 
     void OnAudioFilterRead(float[] data, int channels)
@@ -325,7 +536,7 @@ public class synth : MonoBehaviour
                 if (isPlaying[j])
                 {
                     //data[i] += (1.0f - (timeIndex[j]) * noteDurs[j] / fs) * CreateSine(timeIndex[j], freqs[j], fs);
-                    data[i] += CreateSine(timeIndex[j], freqs[j], fs);
+                    data[i] += CreateSine(timeIndex[j], freqs[j], fs)/4;
                     timeIndex[j]++;
                     //if (timeIndex[j] >= (fs * waveLengthInSeconds1))
                     //{
@@ -339,10 +550,10 @@ public class synth : MonoBehaviour
                 //( 1.0f - (timeIndex1) * NoteDur / fs) *  <-- envelope
                 data[i] += CreateSine(timeIndex1, currentNoteFreq, fs);
                 timeIndex1++;
-                if (timeIndex1 >= (fs * waveLengthInSeconds1))
+                /*if (timeIndex1 >= (fs * waveLengthInSeconds1))
                 {
                     timeIndex1 = 0;
-                }
+                }*/
             }
             if (Xplaying)
             {
@@ -381,6 +592,7 @@ public class synth : MonoBehaviour
                 }
             }
 
+
             data[i] = data[i] / 5.0f;
 
             //data[i] = CreateSine(timeIndex, f, fs);
@@ -393,10 +605,22 @@ public class synth : MonoBehaviour
 
         }
 
+        
+
     }
+
 
     public float CreateSine(int timeIndex, float frequency, float sampleRate)
     {
         return Mathf.Sin(2 * Mathf.PI * timeIndex * frequency / sampleRate);
     }
+
+    private void endGame(int notes)
+    {
+        print(totalNotes);
+    }
+
+   
+
+
 }

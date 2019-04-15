@@ -4,5 +4,14 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Precomposed.unity
+    guid: 249481f7cab3d46a6bff7de3d3ba1414
+  - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: deb5d5ac90b8ad641900ac1d9275ee85
+  - enabled: 1
+    path: Assets/Scenes/Improvisation.unity
+    guid: dfbe95aed13cb7f4fa69477d225594a0
   m_configObjects: {}

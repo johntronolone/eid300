@@ -26,6 +26,7 @@ public class MovementCube : MonoBehaviour
     public bool[] nodePlaying = new bool[10];
 
 
+
     // Start is called before the first frame update
     void Start()
     {
@@ -42,28 +43,29 @@ public class MovementCube : MonoBehaviour
     void Update()
     {
 
-        for (int i = 0; i < 10; i++)
-        {
-            nodePlaying[i] = false;
-        }
+        //for (int i = 0; i < 10; i++)
+        //{
+        //    nodePlaying[i] = false;
+        //}
 
-        // Make arrow keys into a pos or neg value only
-        if (Input.GetAxis("Horizontal") > 0)
-        {
-            deltaX = moveSpeed * Time.deltaTime;
+        //// Make arrow keys into a pos or neg value only
+        //if (Input.GetAxis("Horizontal") > 0)
+        //{
+        //    deltaX = moveSpeed * Time.deltaTime;
 
-        }
-        else if (Input.GetAxis("Horizontal") < 0)
-        {
-            deltaX = -moveSpeed * Time.deltaTime;
-        }
-        else
-        {
-            deltaX = 0;
-        }
+        //}
+        //else if (Input.GetAxis("Horizontal") < 0)
+        //{
+        //    deltaX = -moveSpeed * Time.deltaTime;
+        //}
+        //else
+        //{
+        //    deltaX = 0;
+        //}
+        transform.position = new Vector3(Input.mousePosition.x/Screen.width*24.0f-12, -0.5f, -0.2f);
 
         //move player object by a delta X
-        transform.Translate(deltaX, 0f, 0f);
+        //transform.Translate(deltaX, 0f, 0f);
 
         //oscilate node only if player object has moved past the node
        /* if (transform.position.x <= targetPos1)

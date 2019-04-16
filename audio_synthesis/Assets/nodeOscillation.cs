@@ -28,6 +28,8 @@ public class nodeOscillation : MonoBehaviour
     {
         // Three seconds is period.
         string[] num = gameObject.name.Split(' ');
+
+        // determine note number to use for array index
         nodeNum = int.Parse(num[1])-1;
         increaseXZPosition = (2.0f * Mathf.PI) / 0.1f;
         x_init = transform.position.x;
@@ -35,18 +37,19 @@ public class nodeOscillation : MonoBehaviour
         z_init = transform.position.z;
     }
 
+    public float Amp = 0.3f;
+
 
     // Update is called once per frame
     public void Update()
     {
-
         //GameObject.Find(node).gameObject.GetComponent<nodeOscillation>().
         if (isPlaying[nodeNum]) //check this from armMovement.cs
         {
             t = Time.time - startTime; //check start time from armMove....cs
-            if (1.0f - (t / 2.0f) > 0.0f)
+            if (1.0f - (t * 2.0f) > 0.0f)
             {
-                spherePosition = new Vector3(x_init + (1.0f - t / 2.0f) * (1.0f * Mathf.Sin(Mathf.Abs(xzPosition))) * Mathf.Cos(Mathf.PI * (Mathf.Abs(transform.position.z)) / 20.0f), y_init, z_init);
+                spherePosition = new Vector3(x_init + Amp * (1.0f - t * 2.0f) * (1.0f * Mathf.Sin(2.0f * Mathf.Abs(xzPosition))) * Mathf.Cos(Mathf.PI * (Mathf.Abs(transform.position.z))/10.0f), y_init, z_init);
                 this.transform.position = spherePosition;
 
                 // Update the rotating position.
@@ -59,7 +62,7 @@ public class nodeOscillation : MonoBehaviour
         }
 
 
-        if (GameObject.Find("Movement Cube").GetComponent<synth>().nodePlaying[nodeNum])
+        if (GameObject.Find("Sphere").GetComponent<synth>().nodePlaying[nodeNum])
         {
             startTime = Time.time;
             isPlaying[nodeNum] = true;

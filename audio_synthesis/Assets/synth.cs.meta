@@ -3,7 +3,9 @@ guid: 48146d28d1f9140899e3a447af578074
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - NoteBar: {fileID: 6049545461137923655, guid: 8855036e840ec49fd99598730f0fb1a7,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

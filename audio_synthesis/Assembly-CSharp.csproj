@@ -478,12 +478,13 @@
     <Compile Include="Assets\drywetmidi\DryWetMidi\Tools\Randomizer\Utilities\NotesRandomizerUtilities.cs" />
     <Compile Include="Assets\drywetmidi\DryWetMidi\Tools\Randomizer\Utilities\TimedEventsRandomizerUtilities.cs" />
     <Compile Include="Assets\drywetmidi\ObjectDumper.cs" />
+    <Compile Include="Assets\improvNodeOscillation.cs" />
     <Compile Include="Assets\MirrorCube.cs" />
     <Compile Include="Assets\MovementCube.cs" />
     <Compile Include="Assets\nodeOscillation.cs" />
     <Compile Include="Assets\NoteBarMove.cs" />
     <Compile Include="Assets\synth.cs" />
-    <Compile Include="Assets\synthImprov.cs" />
+    <Compile Include="Assets\SynthImprov.cs" />
     <None Include="Assets\drywetmidi\DryWetMidi\ClassDiagrams\SysExEventsClassDiagram.cd" />
     <None Include="Assets\drywetmidi\DryWetMidi\ClassDiagrams\SystemRealTimeEventsClassDiagram.cd" />
     <None Include="Assets\drywetmidi\DryWetMidi\ClassDiagrams\ChannelEventsClassDiagram.cd" />

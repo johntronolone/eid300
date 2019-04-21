@@ -238,7 +238,6 @@ public class synth : MonoBehaviour
         //read in midi file
         var midiFile = MidiFile.Read("Assets/pink_panther.mid");
         TempoMap tempoMap = midiFile.GetTempoMap();
-        print(tempoMap);
         ticksPerQuarterNote = tempoMap.TimeDivision.ToInt16() * 2.0f;
 
         // parse and extract melody track
